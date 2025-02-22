@@ -7,19 +7,27 @@ const createScene = function () {
     scene.clearColor = new BABYLON.Color4(0, 0, 0, 1); // Nền đen
 
     // Tạo camera
-    const camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 4, 10, BABYLON.Vector3.Zero(), scene);
+    const camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 4, 15, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
 
     // Tạo ánh sáng
     const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
-    // Tạo mặt đất
-    const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
     
-    // Tạo nhà hàng đơn giản
-    const restaurant = BABYLON.MeshBuilder.CreateBox("restaurant", { width: 3, height: 2, depth: 3 }, scene);
-    restaurant.position.y = 1;
-    restaurant.position.x = -2;
+    // Tạo mặt đất
+    const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
+
+    // Load các cửa hàng từ file GLB
+    const loadGLB = (filePath, position) => {
+        BABYLON.SceneLoader.ImportMesh("", "assets/", filePath, scene, function (meshes) {
+            const model = meshes[0];
+            model.position = position;
+        });
+    };
+
+    // Load 3 cửa hàng khác nhau
+    loadGLB("restaurant1.glb", new BABYLON.Vector3(-5, 0, 0));
+    loadGLB("restaurant2.glb", new BABYLON.Vector3(5, 0, 0));
+    loadGLB("food-truck.glb", new BABYLON.Vector3(0, 0, 5));
 
     return scene;
 };
