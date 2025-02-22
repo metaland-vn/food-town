@@ -3,14 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Metaverse</title>
+    <title>Babylon.js Multiple GLB Viewer</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
-    <script src="main.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('renderCanvas');
+            const engine = new BABYLON.Engine(canvas, true);
+
+            const createScene = function () {
+                const scene = new BABYLON.Scene(engine);
+                scene.clearColor = new BABYLON.Color4(0, 0, 0, 0); // Nền trong suốt
+
+                const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 3, 10, BABYLON.Vector3.Zero(), scene);
+                camera.attachControl(canvas, true);
+
+                const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+                light.intensity = 0.8;
+
+                // Danh sách file GLB và vị trí của chúng
+                const models = [
+                    { file: "model1.glb", position: new BABYLON.Vector3(-2, 0, 0) },
+                    { file: "model2.glb", position: new BABYLON.Vector3(2, 0, 0) },
+                    { file: "model3.glb", position: new BABYLON.Vector3(0, 0, 2) }
+                ];
+
+                models.forEach(model => {
+                    BABYLON.SceneLoader.ImportMesh("", "./", model.file, scene, function (meshes) {
+                        meshes.forEach(mesh => mesh.position = model.position);
+                    });
+                });
+
+                return scene;
+            };
+
+            const scene = createScene();
+            engine.runRenderLoop(() => scene.render());
+
+            window.addEventListener('resize', () => engine.resize());
+        });
+    </script>
 </body>
 </html>
-
