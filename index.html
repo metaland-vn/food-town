@@ -1,92 +1,95 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Phố Ẩm Thực BabylonJS</title>
-    <style>
-      html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; }
-      canvas { width: 100%; height: 100%; display: block; }
-    </style>
-  </head>
-  <body>
-    <canvas id="renderCanvas"></canvas>
+<head>
+  <meta charset="UTF-8" />
+  <title>Phố Ẩm Thực Babylon.js</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    canvas { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="renderCanvas"></canvas>
 
-    <!-- Babylon CDN -->
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.min.js"></script>
+  <!-- BabylonJS CDN -->
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.min.js"></script>
 
-    <script>
-      const canvas = document.getElementById("renderCanvas");
-      const engine = new BABYLON.Engine(canvas, true);
+  <script>
+    const canvas = document.getElementById("renderCanvas");
+    const engine = new BABYLON.Engine(canvas, true);
 
-      const createScene = async () => {
-        const scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color3(0.9, 0.95, 1);
+    const createScene = async () => {
+      const scene = new BABYLON.Scene(engine);
+      scene.clearColor = new BABYLON.Color3(0.9, 0.95, 1);
 
-        const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 3, 60, new BABYLON.Vector3(0, 5, 0), scene);
-        camera.attachControl(canvas, true);
+      const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 3, 60, new BABYLON.Vector3(0, 5, 0), scene);
+      camera.attachControl(canvas, true);
 
-        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-        light.intensity = 0.9;
+      const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+      light.intensity = 0.9;
 
-        // Tạo đường & vỉa hè
-        const createStreet = () => {
-          const matStreet = new BABYLON.StandardMaterial("streetMat", scene);
-          matStreet.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+      // === Vỉa hè + Đường
+      const createStreet = () => {
+        const matStreet = new BABYLON.StandardMaterial("streetMat", scene);
+        matStreet.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
 
-          const matSidewalk = new BABYLON.StandardMaterial("sidewalkMat", scene);
-          matSidewalk.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        const matSidewalk = new BABYLON.StandardMaterial("sidewalkMat", scene);
+        matSidewalk.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
 
-          const createGround = (name, width, height, x, mat) => {
-            const g = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
-            g.position.x = x;
-            g.material = mat;
-            return g;
-          };
-
-          createGround("sidewalkLeft", 10, 100, -15, matSidewalk);
-          createGround("street", 20, 100, 0, matStreet);
-          createGround("sidewalkRight", 10, 100, 15, matSidewalk);
+        const createGround = (name, width, height, x, mat) => {
+          const g = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
+          g.position.x = x;
+          g.material = mat;
+          return g;
         };
 
-        createStreet();
-
-        // Load mô hình nhà hàng từ file GLB
-        const loadRestaurantGLB = async () => {
-          const result = await BABYLON.SceneLoader.ImportMeshAsync("", "https://models.babylonjs.com/", "BoomBox.glb", scene);
-          const baseModel = result.meshes[0];
-          baseModel.setEnabled(false); // ẩn mô hình gốc
-
-          const positionsLeft = [-30, -10, 10, 30]; // vị trí dọc vỉa hè trái
-          const positionsRight = [-25, -5, 15, 35]; // vị trí vỉa hè phải
-
-          // Tạo bên trái (hướng về bên phải)
-          positionsLeft.forEach((z, index) => {
-            const clone = baseModel.clone("restLeft_" + index);
-            clone.position = new BABYLON.Vector3(-15, 0, z);
-            clone.rotation.y = Math.PI / 2; // quay mặt vào đường
-            clone.scaling = new BABYLON.Vector3(3, 3, 3);
-            clone.setEnabled(true);
-          });
-
-          // Tạo bên phải (hướng về bên trái)
-          positionsRight.forEach((z, index) => {
-            const clone = baseModel.clone("restRight_" + index);
-            clone.position = new BABYLON.Vector3(15, 0, z);
-            clone.rotation.y = -Math.PI / 2; // quay mặt vào đường
-            clone.scaling = new BABYLON.Vector3(3, 3, 3);
-            clone.setEnabled(true);
-          });
-        };
-
-        await loadRestaurantGLB();
-        return scene;
+        createGround("sidewalkLeft", 10, 100, -15, matSidewalk);
+        createGround("street", 20, 100, 0, matStreet);
+        createGround("sidewalkRight", 10, 100, 15, matSidewalk);
       };
 
-      createScene().then(scene => {
-        engine.runRenderLoop(() => scene.render());
-        window.addEventListener("resize", () => engine.resize());
-      });
-    </script>
-  </body>
+      createStreet();
+
+      // === Load nhà hàng GLB & đặt dọc vỉa hè
+      const loadRestaurantsRow = async () => {
+        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "https://models.babylonjs.com/", "BoomBox.glb", scene);
+        const baseModel = result.meshes[0];
+        baseModel.setEnabled(false); // Ẩn bản gốc
+
+        const bounding = baseModel.getBoundingInfo().boundingBox;
+        const sizeZ = bounding.maximum.z - bounding.minimum.z;
+        const spacing = sizeZ + 0.5;
+        const numRestaurants = 8;
+
+        // Vỉa hè trái
+        for (let i = 0; i < numRestaurants; i++) {
+          const clone = baseModel.clone("left_" + i);
+          clone.position = new BABYLON.Vector3(-15, 0, i * spacing - (numRestaurants * spacing) / 2);
+          clone.rotation.y = Math.PI / 2;
+          clone.scaling = new BABYLON.Vector3(3, 3, 3);
+          clone.setEnabled(true);
+        }
+
+        // Vỉa hè phải
+        for (let i = 0; i < numRestaurants; i++) {
+          const clone = baseModel.clone("right_" + i);
+          clone.position = new BABYLON.Vector3(15, 0, i * spacing - (numRestaurants * spacing) / 2);
+          clone.rotation.y = -Math.PI / 2;
+          clone.scaling = new BABYLON.Vector3(3, 3, 3);
+          clone.setEnabled(true);
+        }
+      };
+
+      await loadRestaurantsRow();
+      return scene;
+    };
+
+    createScene().then(scene => {
+      engine.runRenderLoop(() => scene.render());
+      window.addEventListener("resize", () => engine.resize());
+    });
+  </script>
+</body>
 </html>
+
