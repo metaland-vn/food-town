@@ -53,7 +53,7 @@
 
       // === Load nhà hàng GLB & đặt dọc vỉa hè
       const loadRestaurantsRow = async () => {
-        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "https://models.babylonjs.com/", "BoomBox.glb", scene);
+        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "models/", "restaurant.glb", scene);
         const baseModel = result.meshes[0];
         baseModel.setEnabled(false); // Ẩn bản gốc
 
