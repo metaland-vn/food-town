@@ -28,10 +28,37 @@
         light.intensity = 0.9;
 
         // Đường phố
-        const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 50, height: 10 }, scene);
-        const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
-        groundMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-        ground.material = groundMat;
+       // ==== TẠO ĐƯỜNG ====
+const createStreet = () => {
+  // Vỉa hè trái
+  const sidewalkLeft = BABYLON.MeshBuilder.CreateGround("sidewalkLeft", {
+    width: 10,
+    height: 50,
+  }, scene);
+  sidewalkLeft.position.x = -10;
+  const sidewalkMat = new BABYLON.StandardMaterial("sidewalkMat", scene);
+  sidewalkMat.diffuseColor = new BABYLON.Color3(0.85, 0.85, 0.85); // xám nhạt
+  sidewalkLeft.material = sidewalkMat;
+
+  // Đường chính
+  const street = BABYLON.MeshBuilder.CreateGround("street", {
+    width: 20,
+    height: 50,
+  }, scene);
+  const streetMat = new BABYLON.StandardMaterial("streetMat", scene);
+  streetMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2); // đen xám
+  street.material = streetMat;
+
+  // Vỉa hè phải
+  const sidewalkRight = BABYLON.MeshBuilder.CreateGround("sidewalkRight", {
+    width: 10,
+    height: 50,
+  }, scene);
+  sidewalkRight.position.x = 10;
+  sidewalkRight.material = sidewalkMat;
+};
+
+createStreet();
 
         // Tạo nhà hàng
         const createRestaurant = (x, name) => {
