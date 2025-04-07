@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Phố Ẩm Thực Babylon.js</title>
+    <title>Phố Ẩm Thực BabylonJS</title>
     <style>
       html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; }
       canvas { width: 100%; height: 100%; display: block; }
@@ -11,88 +11,82 @@
   <body>
     <canvas id="renderCanvas"></canvas>
 
+    <!-- Babylon CDN -->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.min.js"></script>
+
     <script>
       const canvas = document.getElementById("renderCanvas");
       const engine = new BABYLON.Engine(canvas, true);
 
-      const createScene = function () {
+      const createScene = async () => {
         const scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color3(0.8, 0.95, 1);
+        scene.clearColor = new BABYLON.Color3(0.9, 0.95, 1);
 
-        const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 3, 30, new BABYLON.Vector3(0, 2, 0), scene);
+        const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 3, 60, new BABYLON.Vector3(0, 5, 0), scene);
         camera.attachControl(canvas, true);
 
         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
         light.intensity = 0.9;
 
-        // Đường phố
-       // ==== TẠO ĐƯỜNG ====
-const createStreet = () => {
-  // Vỉa hè trái
-  const sidewalkLeft = BABYLON.MeshBuilder.CreateGround("sidewalkLeft", {
-    width: 10,
-    height: 50,
-  }, scene);
-  sidewalkLeft.position.x = -10;
-  const sidewalkMat = new BABYLON.StandardMaterial("sidewalkMat", scene);
-  sidewalkMat.diffuseColor = new BABYLON.Color3(0.85, 0.85, 0.85); // xám nhạt
-  sidewalkLeft.material = sidewalkMat;
+        // Tạo đường & vỉa hè
+        const createStreet = () => {
+          const matStreet = new BABYLON.StandardMaterial("streetMat", scene);
+          matStreet.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
 
-  // Đường chính
-  const street = BABYLON.MeshBuilder.CreateGround("street", {
-    width: 20,
-    height: 50,
-  }, scene);
-  const streetMat = new BABYLON.StandardMaterial("streetMat", scene);
-  streetMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2); // đen xám
-  street.material = streetMat;
+          const matSidewalk = new BABYLON.StandardMaterial("sidewalkMat", scene);
+          matSidewalk.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
 
-  // Vỉa hè phải
-  const sidewalkRight = BABYLON.MeshBuilder.CreateGround("sidewalkRight", {
-    width: 10,
-    height: 50,
-  }, scene);
-  sidewalkRight.position.x = 10;
-  sidewalkRight.material = sidewalkMat;
-};
+          const createGround = (name, width, height, x, mat) => {
+            const g = BABYLON.MeshBuilder.CreateGround(name, { width, height }, scene);
+            g.position.x = x;
+            g.material = mat;
+            return g;
+          };
 
-createStreet();
-
-        // Tạo nhà hàng
-        const createRestaurant = (x, name) => {
-          const building = BABYLON.MeshBuilder.CreateBox(name, { width: 5, height: 4, depth: 4 }, scene);
-          building.position.set(x, 2, 0);
-
-          const buildingMat = new BABYLON.StandardMaterial(name + "_mat", scene);
-          buildingMat.diffuseColor = new BABYLON.Color3(1, 0.9, 0.6);
-          building.material = buildingMat;
-
-          // Gắn bảng hiệu bằng GUI
-          const plane = BABYLON.MeshBuilder.CreatePlane(name + "_label", { width: 5, height: 1 }, scene);
-          plane.position = new BABYLON.Vector3(x, 5, 0);
-          plane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
-
-          const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
-          const label = new BABYLON.GUI.TextBlock();
-          label.text = name;
-          label.color = "white";
-          label.fontSize = 48;
-          advancedTexture.addControl(label);
+          createGround("sidewalkLeft", 10, 100, -15, matSidewalk);
+          createGround("street", 20, 100, 0, matStreet);
+          createGround("sidewalkRight", 10, 100, 15, matSidewalk);
         };
 
-        createRestaurant(-10, "Phở Bò 79");
-        createRestaurant(0, "Bún Chả Hà Nội");
-        createRestaurant(10, "Cơm Tấm Sài Gòn");
+        createStreet();
 
+        // Load mô hình nhà hàng từ file GLB
+        const loadRestaurantGLB = async () => {
+          const result = await BABYLON.SceneLoader.ImportMeshAsync("", "https://models.babylonjs.com/", "BoomBox.glb", scene);
+          const baseModel = result.meshes[0];
+          baseModel.setEnabled(false); // ẩn mô hình gốc
+
+          const positionsLeft = [-30, -10, 10, 30]; // vị trí dọc vỉa hè trái
+          const positionsRight = [-25, -5, 15, 35]; // vị trí vỉa hè phải
+
+          // Tạo bên trái (hướng về bên phải)
+          positionsLeft.forEach((z, index) => {
+            const clone = baseModel.clone("restLeft_" + index);
+            clone.position = new BABYLON.Vector3(-15, 0, z);
+            clone.rotation.y = Math.PI / 2; // quay mặt vào đường
+            clone.scaling = new BABYLON.Vector3(3, 3, 3);
+            clone.setEnabled(true);
+          });
+
+          // Tạo bên phải (hướng về bên trái)
+          positionsRight.forEach((z, index) => {
+            const clone = baseModel.clone("restRight_" + index);
+            clone.position = new BABYLON.Vector3(15, 0, z);
+            clone.rotation.y = -Math.PI / 2; // quay mặt vào đường
+            clone.scaling = new BABYLON.Vector3(3, 3, 3);
+            clone.setEnabled(true);
+          });
+        };
+
+        await loadRestaurantGLB();
         return scene;
       };
 
-      const scene = createScene();
-      engine.runRenderLoop(() => scene.render());
-
-      window.addEventListener("resize", () => engine.resize());
+      createScene().then(scene => {
+        engine.runRenderLoop(() => scene.render());
+        window.addEventListener("resize", () => engine.resize());
+      });
     </script>
   </body>
 </html>
