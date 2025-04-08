@@ -46,6 +46,14 @@
         });
       });
 
+      // Load GLB Model 3
+      BABYLON.SceneLoader.ImportMeshAsync("", "models/", "banhmy.glb", scene).then((result3) => {
+        result3.meshes.forEach(mesh => {
+          if (mesh.name !== "__root__") {
+            mesh.position.x = 26; // Dịch sang phải
+          }
+        });
+      });
       return scene;
     };
 
