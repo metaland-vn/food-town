@@ -62,6 +62,14 @@
           }
         });
       });
+      // Load GLB Model 5
+      BABYLON.SceneLoader.ImportMeshAsync("", "models/", "shop_storefront_v2.0_-_training_ies_vic.glb", scene).then((result4) => {
+        result4.meshes.forEach(mesh => {
+          if (mesh.name !== "__root__") {
+            mesh.position.x = 22; // Dịch sang phải
+          }
+        });
+      });
       return scene;
     };
 
